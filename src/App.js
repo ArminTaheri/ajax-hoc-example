@@ -1,69 +1,7 @@
-import React, { Component } from 'react';
+import React from 'react';
+import { withAjax } from './examples/ajax-list'
+import { withInfiniteScroll } from './examples/infinite-scroll';
 import './App.css';
-
-// Mock AJAX endpoint
-const ENDPOINT = {
-  'http://fakesite.com/carts/1': {
-    body: {
-      items: [
-        { name: 'banana', price: 3 },
-        { name: 'apple', price: 5 },
-        { name: 'chicken', price: 18 },
-      ]
-    }
-  },
-  'http://fakesite.com/carts/2': {
-    body: {
-      items: [
-        { name: 'toast', price: 1 },
-        { name: 'eggs', price: 3 },
-        { name: 'pancakes', price: 7 },
-      ]
-    }
-  }
-};
-
-// Fake ajax endpoint with a random delay.
-const ajax = url => new Promise(resolve => {
-  const response = ENDPOINT[url];
-  // Simulated delay by some fraction of 10 of 2000ms
-  const ajaxDelay = 2000 + 1000 * Math.floor(Math.random() * 10) / 10;
-  setTimeout(() => resolve(response), ajaxDelay);
-});
-
-
-
-// --------- Library maintainer point of view -----------------------------------------
-const Loading = () => <h1>Loading, please wait...</h1>
-
-/**
- * withAjax:
- * While ajax(url) runs, render a loading component.
- * When ajax(url) completes render WrappedComponent using transform(ajax(url)) as props.
- */
-const withAjax = (WrappedComponent, url, { LoadingComponent, transform }) => {
-  // And return a new anonymous component
-  return class extends Component {
-    constructor(props) {
-      super(props);
-      this.state = { resultObj: null };
-      ajax(url).then(response => {
-        this.setState({ resultObj: transform(response) });
-      });
-    }
-    render() {
-      const Loader = LoadingComponent || Loading;
-      const { resultObj } = this.state;
-      if (!resultObj) {
-        return <Loader />;
-      }
-      const passedProps = { ...resultObj, ...this.props };
-      return <WrappedComponent {...passedProps} />;
-    }
-  }
-}
-
-
 
 // ------------- Developer's Point of view ------------------------------------------
 const ItemList = ({ title, items }) => {
@@ -78,21 +16,26 @@ const ItemList = ({ title, items }) => {
   );
 };
 
-
-const StoreView = withAjax(ItemList, 'http://fakesite.com/carts/1', {
-  transform: response => ({ items: response.body.items })
+const StoreView = withAjax('http://fakesite.com/carts/1', ItemList, {
+  resToProps: response => ({ items: response.body.items })
 });
 
-const StoreViewAlt = withAjax(ItemList, 'http://fakesite.com/carts/2', {
-  transform: response => ({ items: response.body.items }),
+const StoreViewAlt = withAjax('http://fakesite.com/carts/2', ItemList, {
+  resToProps: response => ({ items: response.body.items }),
   LoadingComponent: () => <h1 style={{ color: '#900' }}>Loading in red...</h1>
 });
 
+const InfiniteStore = withInfiniteScroll('http://fakesite.com/carts/1', ItemList, {
+  listToProps: list => ({ items: list }),
+  resToList: response => response.body.items,
+  resToNextURL: response => response.body.next
+});
 
 const App = () =>
   <div>
     <StoreView title="Snacks" />
     <StoreViewAlt title="Entrees" />
+    <InfiniteStore title="Infinity Menu" />
   </div>;
 
 export default App;
