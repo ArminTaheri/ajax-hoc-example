@@ -40,7 +40,8 @@ const withAjax = (WrappedComponent, { LoadingComponent, resToProps }) => {
       if (!resultObj) {
         return <Loader />;
       }
-      const passedProps = { ...resultObj, ...this.props };
+      const { url, ...restProps } = this.props;
+      const passedProps = { ...resultObj, ...restProps };
       return <WrappedComponent {...passedProps} />;
     }
   }

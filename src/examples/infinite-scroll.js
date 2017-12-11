@@ -45,13 +45,15 @@ const withInfiniteScroll = (Wrapped, { resToList, resToNextURL, listToProps }) =
     render() {
       const { list } = this.state;
       const transformedProps = listToProps instanceof Function ? listToProps(list) : { list };
-      const passedProps = { ...transformedProps, ...this.props };
-      // Show small div for demoing infinite scroll
+      let passedProps = {};
+      { // Extract wrapper specific props before passing to Wrapped.
+        const { list, next, ...restProps } = this.props
+        passedProps = { ...transformedProps, ...restProps };
+      }
       const style = {
         overflowX: 'hidden',
         overflowY: 'scroll',
         maxHeight: '300px',
-        width: '350px'
       };
       const scroll = e => this.scrollEvent.next(e);
       return (
