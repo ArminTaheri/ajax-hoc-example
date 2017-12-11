@@ -32,7 +32,7 @@ const ENDPOINT = {
   }
 }
 
-// Fake ajax endpoint with a random delay.
+// Fake ajax request with a random delay.
 const ajax = url => new Promise(resolve => {
   const response = ENDPOINT[url];
   // Simulated delay by some fraction of 10 of 2000ms
