@@ -2,9 +2,17 @@ import React, { Component } from 'react';
 import { Subject, Observable } from 'rxjs-es';
 
 import { ajax } from './ajax';
-import { withAjax } from './ajax-list';
+import { withAjax } from './ajax-wrapper';
 
-const withInfiniteScroll = (initUrl, Wrapped, { resToList, resToNextURL, listToProps }) => {
+/**
+ * withInfiniteScroll
+ * @param  {Component} Wrapped      Component to extend with infinite scrolling
+ * @param  {Function} resToList     How to extract the list if items from an ajax response
+ * @param  {Function} resToNextURL  How to extract the nest URL to fetch from an ajax response
+ * @param  {Function} listToProps   Transform the list from resToList into a props object for the Wrapped component.
+ * @return {Component}
+ */
+const withInfiniteScroll = (Wrapped, { resToList, resToNextURL, listToProps }) => {
   class InfiniteScroll extends Component {
     constructor(props) {
       super(props);
@@ -55,7 +63,7 @@ const withInfiniteScroll = (initUrl, Wrapped, { resToList, resToNextURL, listToP
     }
   }
   // the initial load can be done using withAjax on the InfinityScroll-wrapped component.
-  return withAjax(initUrl, InfiniteScroll, {
+  return withAjax(InfiniteScroll, {
     resToProps: response => ({ list: resToList(response), next: resToNextURL(response) })
   });
 }
